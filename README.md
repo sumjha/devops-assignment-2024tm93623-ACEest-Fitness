@@ -12,7 +12,7 @@ RollNo: **2024TM93623**
 
 Course: Introduction to DEVOPS (SEZG514)
 
-Readme: [https://github.com/sumjha/devops-assignment-2024tm93623-ACEest-Fitness/edit/main/README.md](https://github.com/sumjha/devops-assignment-2024tm93623-ACEest-Fitness/blob/main/README.md)
+Readme: https://github.com/sumjha/devops-assignment-2024tm93623-ACEest-Fitness/blob/main/README.md
 
 ## Project Structure
 
