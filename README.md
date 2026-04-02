@@ -6,8 +6,10 @@ Application: A Flask-based web application for managing gym client profiles, fit
 
 ## Submitted By:
 
-Name:   Sumit Jha
-RollNo: 2024TM93623
+Name:   **Sumit Jha**
+
+RollNo: **2024TM93623**
+
 Course: Introduction to DEVOPS (SEZG514)
 
 ## Project Structure
@@ -91,6 +93,8 @@ The workflow file at `.github/workflows/main.yml` runs on every **push** and **p
 
 Each stage only runs if the previous one passes, acting as a quality gate before the image is considered deployable.
 
+<img width="1666" height="875" alt="image" src="https://github.com/user-attachments/assets/f72dd49d-7881-484c-bd29-5b97fc4cb982" />
+
 ---
 
 ## Jenkins Integration
@@ -115,3 +119,11 @@ A `Jenkinsfile` is included at the project root for use with a Jenkins pipeline 
 | Docker Build | Builds the Docker image and tags it with the build number |
 
 Jenkins serves as the **BUILD quality gate** — the job fails fast if linting or any test fails, preventing a broken image from being tagged.
+
+**Jenkins Screenshots**
+
+<img width="1666" height="875" alt="image" src="https://github.com/user-attachments/assets/a711e51d-972f-46af-82c3-2c3f99ea5897" />
+
+<img width="1666" height="875" alt="image" src="https://github.com/user-attachments/assets/7f0344fd-e5ea-4923-afcd-f19769788766" />
+
+
