@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ACEest Fitness & Gym</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: #1a1a1a; color: #fff; font-family: Arial, sans-serif; }
+
+        header {
+            background: #d4af37;
+            color: #000;
+            text-align: center;
+            padding: 20px;
+            font-size: 1.6rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .container { max-width: 960px; margin: 30px auto; padding: 0 20px; }
+
+        .card {
+            background: #252525;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+        .card h2 { color: #d4af37; margin-bottom: 16px; }
+
+        label { display: block; margin-bottom: 6px; color: #ccc; font-size: 0.9rem; }
+
+        input, select {
+            width: 100%;
+            padding: 10px;
+            background: #333;
+            border: 1px solid #444;
+            color: #fff;
+            border-radius: 4px;
+            margin-bottom: 14px;
+        }
+
+        button {
+            background: #d4af37;
+            color: #000;
+            font-weight: bold;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover { background: #c09b20; }
+
+        .result-box {
+            background: #111;
+            border-radius: 4px;
+            padding: 16px;
+            margin-top: 14px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 0.9rem;
+            min-height: 60px;
+            color: #aef;
+        }
+
+        .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        @media(max-width: 640px) { .two-col { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+<header>ACEest FUNCTIONAL FITNESS SYSTEM</header>
+
+<div class="container">
+
+    <!-- Program Browser -->
+    <div class="card">
+        <h2>Program Browser</h2>
+        <label for="prog-select">Select a Program</label>
+        <select id="prog-select">
+            <option value="">-- choose --</option>
+            {% for p in programs %}
+            <option value="{{ p }}">{{ p }}</option>
+            {% endfor %}
+        </select>
+        <button onclick="loadProgram()">View Program</button>
+        <div class="two-col" style="margin-top:14px;">
+            <div>
+                <label>Workout Plan</label>
+                <div class="result-box" id="workout-box">Select a program above.</div>
+            </div>
+            <div>
+                <label>Nutrition Plan</label>
+                <div class="result-box" id="diet-box">Select a program above.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Calorie Calculator -->
+    <div class="card">
+        <h2>Calorie Estimator</h2>
+        <label for="cal-weight">Body Weight (kg)</label>
+        <input type="number" id="cal-weight" placeholder="e.g. 75" />
+        <label for="cal-prog">Program</label>
+        <select id="cal-prog">
+            <option value="">-- choose --</option>
+            {% for p in programs %}
+            <option value="{{ p }}">{{ p }}</option>
+            {% endfor %}
+        </select>
+        <button onclick="calcCalories()">Calculate</button>
+        <div class="result-box" id="calorie-result"></div>
+    </div>
+
+    <!-- Client Registration -->
+    <div class="card">
+        <h2>Register Client</h2>
+        <div class="two-col">
+            <div>
+                <label>Full Name</label>
+                <input type="text" id="cl-name" placeholder="e.g. Arun Kumar" />
+                <label>Age</label>
+                <input type="number" id="cl-age" placeholder="e.g. 28" />
+            </div>
+            <div>
+                <label>Weight (kg)</label>
+                <input type="number" id="cl-weight" placeholder="e.g. 72" />
+                <label>Program</label>
+                <select id="cl-prog">
+                    <option value="">-- choose --</option>
+                    {% for p in programs %}
+                    <option value="{{ p }}">{{ p }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <button onclick="saveClient()">Save Client</button>
+        <div class="result-box" id="save-result"></div>
+    </div>
+
+    <!-- Client Lookup -->
+    <div class="card">
+        <h2>Client Lookup</h2>
+        <label>Client Name</label>
+        <input type="text" id="lookup-name" placeholder="Enter client name" />
+        <button onclick="lookupClient()">Search</button>
+        <div class="result-box" id="lookup-result"></div>
+    </div>
+
+</div>
+
+<script>
+    async function loadProgram() {
+        const name = document.getElementById("prog-select").value;
+        if (!name) return;
+        const resp = await fetch("/api/programs/" + encodeURIComponent(name));
+        const data = await resp.json();
+        document.getElementById("workout-box").textContent = data.workout || "N/A";
+        document.getElementById("diet-box").textContent = data.diet || "N/A";
+    }
+
+    async function calcCalories() {
+        const weight = document.getElementById("cal-weight").value;
+        const program = document.getElementById("cal-prog").value;
+        const resp = await fetch("/api/calculate-calories", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ weight: parseFloat(weight), program }),
+        });
+        const data = await resp.json();
+        const box = document.getElementById("calorie-result");
+        if (data.error) {
+            box.textContent = "Error: " + data.error;
+        } else {
+            box.textContent = `Estimated daily calories: ${data.calories} kcal\nProgram: ${data.program}\nWeight: ${data.weight} kg`;
+        }
+    }
+
+    async function saveClient() {
+        const payload = {
+            name: document.getElementById("cl-name").value,
+            age: parseInt(document.getElementById("cl-age").value) || null,
+            weight: parseFloat(document.getElementById("cl-weight").value) || null,
+            program: document.getElementById("cl-prog").value,
+        };
+        const resp = await fetch("/api/clients", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+        });
+        const data = await resp.json();
+        document.getElementById("save-result").textContent =
+            data.error ? "Error: " + data.error : "Saved: " + data.name;
+    }
+
+    async function lookupClient() {
+        const name = document.getElementById("lookup-name").value.trim();
+        if (!name) return;
+        const resp = await fetch("/api/clients/" + encodeURIComponent(name));
+        const data = await resp.json();
+        const box = document.getElementById("lookup-result");
+        if (data.error) {
+            box.textContent = "Not found: " + name;
+        } else {
+            box.textContent =
+                `Name    : ${data.name}\nAge     : ${data.age}\nWeight  : ${data.weight} kg\nProgram : ${data.program}\nCalories: ${data.calories} kcal/day`;
+        }
+    }
+</script>
+
+</body>
+</html>
