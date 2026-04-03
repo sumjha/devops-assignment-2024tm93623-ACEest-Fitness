@@ -12,7 +12,19 @@ RollNo: **2024TM93623**
 
 Course: Introduction to DEVOPS (SEZG514)
 
-Readme: https://github.com/sumjha/devops-assignment-2024tm93623-ACEest-Fitness/blob/main/README.md
+Git Repo: https://github.com/sumjha/devops-assignment-2024tm93623-ACEest-Fitness/
+
+## Required Deliverables
+
+| Deliverable | link|
+|-------|-------------|
+|**Source Code:** All Flask application files (app.py, requirements.txt). | [app.py](app.py) |
+|**Test Suite:** All Pytest script files.|[tests/test_app.py](tests/test_app.py)|
+|**Infrastructure as Code:** A functional Dockerfile and the GitHub Actions YAML configuration.| [Dockerfile](Dockerfile) [.github/workflows/main.yml](.github/workflows/main.yml)  |
+|**Documentation:** A professional README.md detailing:| [README.md](README.md)
+|**Local setup and execution instructions.**| https://github.com/sumjha/devops-assignment-2024tm93623-ACEest-Fitness/tree/main#local-setup--execution |
+|**Steps to run tests manually.**| https://github.com/sumjha/devops-assignment-2024tm93623-ACEest-Fitness/tree/main#running-tests-manually |
+|**A high-level overview of the Jenkins and GitHub Actions integration logic.**| https://github.com/sumjha/devops-assignment-2024tm93623-ACEest-Fitness/tree/main#github-actions--cicd-pipeline|
 
 ## Project Structure
 
