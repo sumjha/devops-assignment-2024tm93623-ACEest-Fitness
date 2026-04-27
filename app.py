@@ -1,3 +1,6 @@
+# Aceestver-1.1.py
+# Flask web app for aceest-gym: copy this file to aceest-gym/app.py (matches pytest + Docker).
+
 import os
 import sqlite3
 
