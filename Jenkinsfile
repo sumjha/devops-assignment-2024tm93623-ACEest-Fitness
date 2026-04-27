@@ -2,9 +2,10 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME   = "aceest-gym"
-        IMAGE_TAG    = "build-${BUILD_NUMBER}"
-        GIT_REPO_URL = "https://github.com/sumjha/devops-assignment-2024tm93623-ACEest-Fitness"
+        IMAGE_NAME            = "aceest-gym"
+        IMAGE_TAG             = "build-${BUILD_NUMBER}"
+        DOCKER_REGISTRY_IMAGE = "sumjha/accest-devops-assignment"
+        GIT_REPO_URL          = "https://github.com/sumjha/devops-assignment-2024tm93623-ACEest-Fitness"
         GIT_BRANCH   = "main"
         // Jenkins often runs with a stripped PATH; Docker CLI lives under these on macOS/Linux.
         PATH         = "/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin:${env.PATH}"
@@ -66,11 +67,34 @@ pipeline {
                 """
             }
         }
+
+        stage('Docker Push') {
+            steps {
+                echo "Pushing to Docker Hub: ${DOCKER_REGISTRY_IMAGE}:${IMAGE_TAG} (and latest)"
+                // Add a "Username with password" credential in Jenkins with this ID (Docker Hub access token recommended).
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'docker-hub-accest-devops',
+                        usernameVariable: 'DOCKER_USERNAME',
+                        passwordVariable: 'DOCKER_PASSWORD'
+                    )
+                ]) {
+                    sh """
+                        export PATH="/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin:\${PATH}"
+                        echo \$DOCKER_PASSWORD | docker login -u \$DOCKER_USERNAME --password-stdin
+                        docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${DOCKER_REGISTRY_IMAGE}:${IMAGE_TAG}
+                        docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${DOCKER_REGISTRY_IMAGE}:latest
+                        docker push ${DOCKER_REGISTRY_IMAGE}:${IMAGE_TAG}
+                        docker push ${DOCKER_REGISTRY_IMAGE}:latest
+                    """
+                }
+            }
+        }
     }
 
     post {
         success {
-            echo "BUILD SUCCESSFUL — ${IMAGE_NAME}:${IMAGE_TAG} is ready."
+            echo "BUILD SUCCESSFUL — ${DOCKER_REGISTRY_IMAGE}:${IMAGE_TAG} pushed (local tag ${IMAGE_NAME}:${IMAGE_TAG})."
         }
         failure {
             echo "BUILD FAILED — check the logs above for details."
