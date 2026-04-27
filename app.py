@@ -1,4 +1,4 @@
-# Aceestver1.1.2.py
+# Aceestver2.0.1.py
 # Flask web app for aceest-gym: copy this file to aceest-gym/app.py (matches pytest + Docker).
 
 import os
@@ -9,7 +9,7 @@ from flask import Flask, jsonify, render_template, request
 PROGRAMS = {
     "Fat Loss (FL)": {
         "name": "Fat Loss (FL)",
-        "workout": (
+        "workout": ( 
             "Mon: Back Squat 5x5 + Core\n"
             "Tue: EMOM 20min Assault Bike\n"
             "Wed: Bench Press + 21-15-9\n"
