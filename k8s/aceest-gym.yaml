@@ -1,4 +1,4 @@
-# Minikube: eval $(minikube docker-env) && docker build -t aceest-gym:latest ..
+# Minikube: eval $(minikube docker-env) && docker build -t aceest-gym:latest .
 # Apply: kubectl apply -f k8s/aceest-gym.yaml
 # Ingress needs: minikube addons enable ingress + /etc/hosts: $(minikube ip) aceest.local
 ---

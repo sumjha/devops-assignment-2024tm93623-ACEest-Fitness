@@ -1,0 +1,189 @@
+# Blue-Green deployment (instant switch + rollback)
+# ------------------------------------------------------------------
+# Two full stacks (blue = current, green = next). Only the Service selector
+# decides which stack receives traffic—no gradual pod mix on the public Service.
+#
+# Apply: kubectl apply -f blue-green.yaml
+#
+# Promote green (switch traffic):
+#   kubectl patch svc aceest-bg-active -n aceest-gym-strategies -p \
+#     '{"spec":{"selector":{"app":"aceest-bg","slot":"green"}}}'
+#
+# Rollback to blue:
+#   kubectl patch svc aceest-bg-active -n aceest-gym-strategies -p \
+#     '{"spec":{"selector":{"app":"aceest-bg","slot":"blue"}}}'
+#
+# Optional: scale inactive color to 0 when not in use to save resources:
+#   kubectl scale deployment/aceest-bg-green -n aceest-gym-strategies --replicas=0
+#
+# Prerequisites: images aceest-gym:blue and aceest-gym:green (or both :latest
+# for demo). With Minikube:
+#   eval $(minikube docker-env) && docker tag aceest-gym:latest aceest-gym:blue && \
+#   docker tag aceest-gym:latest aceest-gym:green
+#
+# Requires ingress-nginx for host-based access (or use NodePort on aceest-bg-active).
+# ------------------------------------------------------------------
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: aceest-gym-strategies
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aceest-bg-blue
+  namespace: aceest-gym-strategies
+  labels:
+    app: aceest-bg
+    slot: blue
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: aceest-bg
+      slot: blue
+  template:
+    metadata:
+      labels:
+        app: aceest-bg
+        slot: blue
+    spec:
+      securityContext:
+        fsGroup: 1000
+      containers:
+        - name: web
+          image: aceest-gym:blue
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 5000
+              name: http
+          env:
+            - name: DB_PATH
+              value: /data/aceest.db
+            - name: ACEEST_SLOT
+              value: blue
+          volumeMounts:
+            - name: data
+              mountPath: /data
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 20
+      volumes:
+        - name: data
+          emptyDir: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aceest-bg-green
+  namespace: aceest-gym-strategies
+  labels:
+    app: aceest-bg
+    slot: green
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: aceest-bg
+      slot: green
+  template:
+    metadata:
+      labels:
+        app: aceest-bg
+        slot: green
+    spec:
+      securityContext:
+        fsGroup: 1000
+      containers:
+        - name: web
+          image: aceest-gym:green
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 5000
+              name: http
+          env:
+            - name: DB_PATH
+              value: /data/aceest.db
+            - name: ACEEST_SLOT
+              value: green
+          volumeMounts:
+            - name: data
+              mountPath: /data
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 20
+      volumes:
+        - name: data
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: aceest-bg-active
+  namespace: aceest-gym-strategies
+  labels:
+    app: aceest-bg
+    role: active-router
+spec:
+  type: NodePort
+  # Traffic goes only to pods matching BOTH labels. Change slot to promote/rollback.
+  selector:
+    app: aceest-bg
+    slot: blue
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+      nodePort: 30202
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: aceest-bg
+  namespace: aceest-gym-strategies
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: bg.aceest.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: aceest-bg-active
+                port:
+                  number: 80

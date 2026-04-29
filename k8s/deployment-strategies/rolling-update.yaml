@@ -1,0 +1,97 @@
+# Rolling Update + kubectl rollback
+# ------------------------------------------------------------------
+# Strategy: Replace pods gradually (maxSurge / maxUnavailable). Kubernetes
+# keeps ReplicaSet revisions so you can undo a bad image or config.
+#
+# Apply:  kubectl apply -f rolling-update.yaml
+# Status:  kubectl rollout status deployment/aceest-rolling -n aceest-gym-strategies
+# History: kubectl rollout history deployment/aceest-rolling -n aceest-gym-strategies
+# Rollback: kubectl rollout undo deployment/aceest-rolling -n aceest-gym-strategies
+#           kubectl rollout undo deployment/aceest-rolling --to-revision=2 -n aceest-gym-strategies
+#
+# This example uses emptyDir for SQLite so it is safe alongside other strategy demos.
+# Replace with a PVC or external DB for production.
+# ------------------------------------------------------------------
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: aceest-gym-strategies
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aceest-rolling
+  namespace: aceest-gym-strategies
+  labels:
+    app: aceest-rolling
+spec:
+  replicas: 3
+  revisionHistoryLimit: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: aceest-rolling
+  template:
+    metadata:
+      labels:
+        app: aceest-rolling
+    spec:
+      securityContext:
+        fsGroup: 1000
+      containers:
+        - name: web
+          image: aceest-gym:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 5000
+              name: http
+          env:
+            - name: DB_PATH
+              value: /data/aceest.db
+          volumeMounts:
+            - name: data
+              mountPath: /data
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 20
+      volumes:
+        - name: data
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: aceest-rolling
+  namespace: aceest-gym-strategies
+  labels:
+    app: aceest-rolling
+spec:
+  type: NodePort
+  selector:
+    app: aceest-rolling
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+      nodePort: 30201
