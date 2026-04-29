@@ -1,0 +1,111 @@
+# Minikube: eval $(minikube docker-env) && docker build -t aceest-gym:latest ..
+# Apply: kubectl apply -f k8s/aceest-gym.yaml
+# Ingress needs: minikube addons enable ingress + /etc/hosts: $(minikube ip) aceest.local
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: aceest-gym
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: aceest-db
+  namespace: aceest-gym
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aceest-gym
+  namespace: aceest-gym
+  labels:
+    app: aceest-gym
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: aceest-gym
+  template:
+    metadata:
+      labels:
+        app: aceest-gym
+    spec:
+      securityContext:
+        fsGroup: 1000
+      containers:
+        - name: web
+          image: aceest-gym:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 5000
+              name: http
+          env:
+            - name: DB_PATH
+              value: /data/aceest.db
+          volumeMounts:
+            - name: db
+              mountPath: /data
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 20
+      volumes:
+        - name: db
+          persistentVolumeClaim:
+            claimName: aceest-db
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: aceest-gym
+  namespace: aceest-gym
+  labels:
+    app: aceest-gym
+spec:
+  type: NodePort
+  selector:
+    app: aceest-gym
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+      nodePort: 30080
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: aceest-gym
+  namespace: aceest-gym
+spec:
+  rules:
+    - host: aceest.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: aceest-gym
+                port:
+                  number: 80
