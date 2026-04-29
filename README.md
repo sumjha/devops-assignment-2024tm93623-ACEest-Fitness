@@ -24,6 +24,7 @@ Course: Introduction to DEVOPS (SEZG514)
 | **Kubernetes YAML manifests**                                                                                      | [k8s/aceest-gym.yaml](k8s/aceest-gym.yaml) · [k8s/deployment-strategies/](k8s/deployment-strategies/)                                          |
 | **Pytest test cases**                                                                                              | [tests/test_app.py](tests/test_app.py)                                                                                                           |
 | **SonarQube report**                                                                                               | [Sonar-report.pdf](Sonar-report.pdf)                                                                                                           |
+| **Docker Hub**                                                                                               | https://hub.docker.com/repository/docker/sumjha/accest-devops-assignment/tags                                                                                                         |
 | **GitHub repository link**                                                                                         | [https://github.com/sumjha/devops-assignment-2024tm93623-ACEest-Fitness/](https://github.com/sumjha/devops-assignment-2024tm93623-ACEest-Fitness/) |
 
 
