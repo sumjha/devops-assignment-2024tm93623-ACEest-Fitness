@@ -18,12 +18,12 @@ Course: Introduction to DEVOPS (SEZG514)
 | Deliverable                                                                                                        | Where it lives in this repository                                                                                                                  |
 | ------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Project folder** (complete codebase)                                                                             | [Repository root](https://github.com/sumjha/devops-assignment-2024tm93623-ACEest-Fitness)                                                          |
-| **Flask application** — integrated app and version history (*ACEest Fitness* iterations; primary file is `app.py`) | `[app.py](The%20code%20versions%20for%20DevOps%20Assignment/)`                                                                                     |
-| **Jenkins pipeline configuration**                                                                                 | `[Jenkinsfile](Jenkinsfile)`                                                                                                                       |
-| **Dockerfile**                                                                                                     | `[Dockerfile](Dockerfile)`                                                                                                                         |
-| **Kubernetes YAML manifests**                                                                                      | `[k8s/aceest-gym.yaml](k8s/aceest-gym.yaml)` · `[k8s/deployment-strategies/](k8s/deployment-strategies/)`                                          |
-| **Pytest test cases**                                                                                              | `[tests/test_app.py](tests/test_app.py)`                                                                                                           |
-| **SonarQube report**                                                                                               | `[Sonar-report.pdf](Sonar-report.pdf)`                                                                                                             |
+| **Flask application** — integrated app and version history (*ACEest Fitness* iterations; primary file is `app.py`) | [app.py](app.py)                                                                                     |
+| **Jenkins pipeline configuration**                                                                                 | [Jenkinsfile](Jenkinsfile)                                                                                                                      |
+| **Dockerfile**                                                                                                     | [Dockerfile](Dockerfile)                                                                                                                         |
+| **Kubernetes YAML manifests**                                                                                      | [k8s/aceest-gym.yaml](k8s/aceest-gym.yaml) · [k8s/deployment-strategies/](k8s/deployment-strategies/)                                          |
+| **Pytest test cases**                                                                                              | [tests/test_app.py](tests/test_app.py)                                                                                                           |
+| **SonarQube report**                                                                                               | [Sonar-report.pdf](Sonar-report.pdf)                                                                                                           |
 | **GitHub repository link**                                                                                         | [https://github.com/sumjha/devops-assignment-2024tm93623-ACEest-Fitness/](https://github.com/sumjha/devops-assignment-2024tm93623-ACEest-Fitness/) |
 
 
@@ -102,6 +102,9 @@ All tests use an in-memory SQLite database so nothing is written to disk.
 
 ## GitHub Actions — CI/CD Pipeline
 
+<img width="1709" height="887" alt="image" src="https://github.com/user-attachments/assets/3fc6bba8-1e9d-4518-a6e3-cb694726438c" />
+
+
 The workflow file at `.github/workflows/main.yml` runs on every **push** and **pull request**.
 
 **Pipeline stages:**
@@ -140,11 +143,17 @@ A `Jenkinsfile` is included at the project root for use with a Jenkins pipeline 
 
 Jenkins serves as the **BUILD quality gate** — the job fails fast if linting or any test fails, preventing a broken image from being tagged.
 
+<img width="1709" height="517" alt="image" src="https://github.com/user-attachments/assets/d8bfa915-cf94-46b5-8f2f-e82d35ffc14d" />
+
+<img width="1709" height="959" alt="image" src="https://github.com/user-attachments/assets/bc5f2d4c-e576-46b0-bcdd-efa77be568fd" />
+
 ---
 
 ## SonarQube — static analysis
 
 [SonarQube](https://www.sonarqube.org/) performs static analysis (bugs, vulnerabilities, code smells, coverage when configured). Run a **SonarQube Server** (for example the official Docker image on port **9000**), create a project with key `**Aceest-gym-devops-assignment2`**, and under My Account → Security generate a token and pass it to the scanner as `**-Dsonar.token=`** or `**-Dsonar.login=**` (never commit the token to Git).
+
+<img width="1709" height="959" alt="image" src="https://github.com/user-attachments/assets/b0e8fd5f-411d-4ded-8255-0d05d4a40961" />
 
 ### Jenkins agent requirements
 
@@ -267,6 +276,12 @@ Single manifest containing: **Namespace**, **PVC** (SQLite on a volume), **Deplo
 3. **Open the app**
   - NodePort: `http://$(minikube ip):30080` or `minikube service aceest-gym -n aceest-gym --url`
   - Ingress: `minikube addons enable ingress`, add `$(minikube ip) aceest.local` to `/etc/hosts`, then browse `http://aceest.local`
+
+<img width="925" height="650" alt="image" src="https://github.com/user-attachments/assets/5a8510fa-0ff8-4a80-960c-9383d912bc07" />
+<img width="925" height="89" alt="image" src="https://github.com/user-attachments/assets/41346889-a0ce-46d4-8a34-e37b442bfb8d" />
+<img width="624" height="640" alt="image" src="https://github.com/user-attachments/assets/35f95b2d-feaa-4acd-8176-23c3d8a111ac" />
+<img width="723" height="651" alt="image" src="https://github.com/user-attachments/assets/f8b7c791-a53c-4ecd-acd3-dd53f7fb1489" />
+
 
 ### Advanced deployment strategies (`k8s/deployment-strategies/`)
 
